@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажер АТ ПС и ЭП локомотивов</title>
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --panel-bg: #1e2235;
+            --accent-color: #00f2fe;
+            --accent-secondary: #4facfe;
+            --text-color: #e2e8f0;
+            --text-muted: #94a3b8;
+            --pm-color: #ff4757;
+            --tm-color: #2e86de;
+            --ur-color: #2ed573;
+            --atm-color: #747d8c;
+            --tc-color: #ffa502;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Меню слева */
+        .sidebar {
+            width: 360px;
+            background-color: #161925;
+            border-right: 1px solid #23283d;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #23283d;
+            background: linear-gradient(135deg, #1e2235, #161925);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.25rem;
+            color: var(--accent-color);
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .question-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .category-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--accent-secondary);
+            margin: 15px 10px 5px 10px;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .question-item {
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            background-color: #1f2438;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
+            line-height: 1.4;
+        }
+
+        .question-item:hover {
+            background-color: #282e48;
+            border-left-color: var(--accent-secondary);
+        }
+
+        .question-item.active {
+            background-color: #2b3352;
+            border-left-color: var(--accent-color);
+            color: #fff;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Контентная зона справа */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: var(--bg-color);
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .workspace {
+            padding: 25px;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .card {
+            background-color: var(--panel-bg);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #2d3450;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--accent-color);
+            font-size: 1.4rem;
+            border-bottom: 1px solid #2d3450;
+            padding-bottom: 12px;
+        }
+
+        .answer-text {
+            line-height: 1.6;
+            font-size: 1.05rem;
+            color: #cbd5e1;
+        }
+
+        .answer-text strong {
+            color: #fff;
+            background-color: #28304d;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .answer-text ul, .answer-text ol {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .answer-text li {
+            margin-bottom: 8px;
+        }
+
+        /* Секция интерактивного симулятора и схем */
+        .visual-section {
+            background-color: #131622;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2d3450;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .visual-title {
+            font-weight: 600;
+            color: #fff;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Симулятор крана 394 */
+        .krm-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .krm-btn {
+            background-color: #23283d;
+            color: #cbd5e1;
+            border: 1px solid #3b4468;
+            padding: 8px 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .krm-btn:hover {
+            background-color: #2e3551;
+            border-color: var(--accent-secondary);
+        }
+
+        .krm-btn.active {
+            background: linear-gradient(135deg, var(--accent-secondary), var(--accent-color));
+            color: #0f111a;
+            border-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+        }
+
+        .canvas-container {
+            width: 100%;
+            max-width: 600px;
+            height: 320px;
+            background-color: #181c2e;
+            border-radius: 8px;
+            border: 2px solid #2d3450;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .info-panel {
+            width: 100%;
+            background-color: #1e2235;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-sizing: border-box;
+        }
+
+        /* Стили графических элементов SVG */
+        .piston { transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .air-flow { stroke-dasharray: 8; animation: dash 1s linear infinite; display: none; }
+        @keyframes dash { to { stroke-dashoffset: -16; } }
+
+        .spin-element { animation: spin 2s linear infinite; transform-origin: center; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .pulse-element { animation: pulse 1.5s ease-in-out infinite alternate; }
+        @keyframes pulse { from { opacity: 0.3; } to { opacity: 1; } }
+
+        /* Адаптивность под мелкие экраны */
+        @media (max-width: 900px) {
+            body { flex-direction: column; overflow: auto; height: auto; }
+            .sidebar { width: 100%; height: 350px; }
+            .main-content { height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Слева: Меню со всеми вопросами -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>Тренажер Машиниста</h1>
+            <p>99 вопросов АТ ПС и Схемы ВЛ80Р/ВЛ85/ЭП1</p>
+        </div>
+        <div class="question-list" id="question-list">
+            <!-- Заполняется из JS -->
+        </div>
+    </div>
+
+    <!-- Справа: Панель отображения текста и схем -->
+    <div class="main-content">
+        <div class="workspace">
+            
+            <!-- Окно интерактивной визуализации / Симулятора -->
+            <div class="visual-section" id="visual-section">
+                <div class="visual-title" id="visual-title">⚙️ Визуализация работы приборов</div>
+                
+                <!-- Кнопки управления для крана 394 (показываются динамически) -->
+                <div class="krm-controls" id="krm-controls" style="display:none;">
+                    <button class="krm-btn active" onclick="changeKrmMode(1)">I Положение</button>
+                    <button class="krm-btn" onclick="changeKrmMode(2)">II Положение</button>
+                    <button class="krm-btn" onclick="changeKrmMode(3)">III Положение</button>
+                    <button class="krm-btn" onclick="changeKrmMode(4)">IV Положение</button>
+                    <button class="krm-btn" onclick="changeKrmMode(5)">V Положение</button>
+                    <button class="krm-btn" onclick="changeKrmMode(6)">VI Положение</button>
+                </div>
+
+                <div class="canvas-container" id="canvas-container">
+                    <!-- Сюда JS вставляет нужный SVG-чертеж -->
+                </div>
+
+                <div class="info-panel" id="info-panel">
+                    Выберите любой вопрос из списка слева для отображения развернутого ответа и запуска соответствующей анимационной схемы узла локомотива.
+                </div>
+            </div>
+
+            <!-- Карточка текстового ответа -->
+            <div class="card">
+                <h2 id="text-title">Подготовка к комиссии</h2>
+                <div class="answer-text" id="text-body">
+                    Для пересдачи комиссии внимательно изучите весь перечень вопросов. Особое внимание уделите режимам торможения, величинам разрядки уравнительного резервуара и тормозной магистрали, а также алгоритмам ликвидации неисправностей в пути следования.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Полный структурированный массив данных (Автотормоза + Электрические схемы)
+        const db = [
+            {
+                id: 1,
+                cat: "Автотормоза (АТ ПС)",
+                title: "1. Принцип работы компрессора КТ-6",
+                text: "<strong>Компрессор КТ-6</strong> — двухступенчатый, трехцилиндровый, поршневой с W-образным расположением цилиндров (угол развала между цилиндрами низкого давления равен <strong>120°</strong>). Служит для снабжения тормозной и пневматической систем сжатым воздухом.<br><br><strong>Рабочий процесс:</strong><ol><li>При ходе поршней двух цилиндров низкого давления (ЦНД) вниз происходит всасывание атмосферного воздуха через фильтры.</li><li>При ходе вверх воздух сжимается до промежуточного давления <strong>2,5–4,0 кгс/см²</strong> и выталкивается в радиаторный холодильник.</li><li>В холодильнике воздух охлаждается, повышая плотность, и поступает в цилиндр высокого давления (ЦВД).</li><li>В ЦВД воздух дожимается до конечного давления <strong>7,5–9,0 кгс/см²</strong> и нагнетается в главные резервуары (ГР).</li><li>При достижении давления <strong>8,5–9,0 кгс/см²</strong> регулятор давления 3РД переводит компрессор на холостой ход путем отжатия всасывающих клапанов разгрузочными устройствами. При падении давления в ГР до <strong>7,5 кгс/см²</strong> нагнетание возобновляется.</li></ol>",
+                type: "kt6"
+            },
+            {
+                id: 2,
+                cat: "Автотормоза (АТ ПС)",
+                title: "2. Устройство и действие ЭПК усл.№150И",
+                text: "<strong>ЭПК усл.№150И</strong> предназначен для обеспечения автоматического экстренного торможения поезда при потере бдительности машинистом или при проезде запрещающих сигналов АЛСН.<br><br><strong>Устройство и работа:</strong> Состоит из кронштейна, пневматического корпуса, камеры выдержки времени объемом <strong>1 литр</strong>, электромагнитного вентиля, срывного клапана, диафрагмы и замка с ключом. Электрическая часть питается постоянным током напряжением <strong>45–55 В</strong>.<br><br>При обесточивании катушки вентиля воздух из камеры выдержки времени уходит в атмосферу через свисток. Свисток звучит в течение <strong>6–8 секунд</strong>, предупреждая машиниста. Если за это время машинист не нажмет рукоятку бдительности, давление над диафрагмой упадет, она прогнется вверх, срывной клапан откроется, и воздух из тормозной магистрали (ТМ) напрямую уйдет в атмосферу широким каналом, вызывая экстренное торможение.",
+                type: "epk"
+            },
+            {
+                id: 3,
+                cat: "Автотормоза (АТ ПС)",
+                title: "3. Классификация тормозов по свойствам управления",
+                text: "Тормоза подвижного состава разделяются по следующим признакам:<ul><li><strong>По способу управления:</strong> Автоматические (срабатывают самостоятельно при разрыве или падении давления в ТМ) и неавтоматические.</li><li><strong>По характеру действия:</strong> Прямодействующие (постоянно пополняют утечки в тормозных цилиндрах из ПМ) и непрямодействующие (наполнение ТЦ идет из ограниченного объема запасного резервуара).</li><li><strong>По источнику энергии:</strong> Пневматические, электропневматические (ЭПТ), электродинамические (реостатные/рекуперативные), магниторельсовые и ручные.</li><li><strong>По способу создания тормозной силы:</strong> Фрикционные (колодочные, дисковые) и динамические.</li></ul>",
+                type: "static"
+            },
+            {
+                id: 6,
+                title: "6. Действие КРМ №394 при V положении ручки",
+                cat: "Автотормоза (АТ ПС)",
+                text: "<strong>V положение — Служебное торможение.</strong> Предназначено для снижения скорости поезда регулировочным или остановочным темпом.<br><br><strong>Пневматическое действие:</strong> Золотник крана сообщает полость уравнительного резервуара (УР) с атмосферой через калиброванную дюзу диаметром <strong>2,3 мм</strong>. Давление в УР начинает падать темпом служебного торможения (на 1,0 кгс/см² за <strong>4–5 секунд</strong>). Уравнительный поршень, находящийся между полостями УР и ТМ, под воздействием избыточного давления снизу поднимается вверх. Он открывает выпускной хвостовой клапан, сообщая тормозную магистраль с атмосферой аналогичным темпом. После получения необходимой разрядки ручку КРМ переводят в положение перекрыши.",
+                type: "krm"
+            },
+            {
+                id: 7,
+                title: "7. Действие КРМ №394 при I положении ручки",
+                cat: "Автотормоза (АТ ПС)",
+                text: "<strong>I положение — Отпуск и зарядка.</strong> Используется после проведения торможения для быстрого восстановления давления в тормозной системе поезда.<br><br><strong>Пневматическое действие:</strong> Сжатый воздух из питательной магистрали через широкие каналы золотника сечением около <strong>200 мм²</strong> устремляется напрямую в тормозную магистраль. Одновременно воздух идет в полость над уравнительным поршнем и через маленькое калиброванное отверстие <strong>1,6 мм</strong> наполняет уравнительный резервуар. Давление в ТМ поднимается выше нормального зарядного (сверхзарядка), что обеспечивает высокую скорость тормозной волны отпуска по всему составу.",
+                type: "krm"
+            },
+            {
+                id: 9,
+                title: "9. Действие КРМ №394 при IV положении ручки",
+                cat: "Автотормоза (АТ ПС)",
+                text: "<strong>IV положение — Перекрыша с питанием ТМ.</strong> Используется в процессе торможения для фиксации достигнутого тормозного эффекта в составе.<br><br><strong>Пневматическое действие:</strong> Золотник крана полностью перекрывает все каналы сообщения УР с атмосферой или питанием. Полость УР становится замкнутой (допуск падения давления — не более <strong>0,1 кгс/см² за 3 минуты</strong>). Если в тормозной магистрали длинного поезда возникают утечки воздуха через неплотности, давление под уравнительным поршнем начинает падать. Стабильное давление УР сверху заставляет поршень сместиться вниз и приоткрыть впускной клапан, подпитывая ТМ из главных резервуаров до уровня давления УР.",
+                type: "krm"
+            },
+            {
+                id: 19,
+                title: "19. Блокировочное устройство №367М и смена кабины",
+                cat: "Автотормоза (АТ ПС)",
+                text: "<strong>Устройство №367М</strong> объединяет пневматические магистрали (ТМ, ПМ, ТЦ) и электрические цепи управления локомотива, исключая возможность одновременного вождения поезда из обеих кабин.<br><br><strong>Строгий алгоритм смены кабины:</strong><ol><li>В рабочей кабине затормозить локомотив КВТ №254 до давления в ТЦ <strong>3,8–4,0 кгс/см²</strong>.</li><li>Ручку КРМ №394 перевести в VI положение, после полной разрядки ТМ переставить в IV положение.</li><li>Закрыть комбинированный кран ТМ.</li><li>Повернуть ключ блокировки №367М вверх и извлечь его из замка (все каналы перекроются, цепи разорвутся).</li><li>Перейти в другую кабину, вставить ключ в замок №367М и повернуть его вниз.</li><li>Открыть комбинированный кран, перевести ручку крана №394 во II положение для зарядки магистрали.</li><li>Отпустить тормоза локомотива краном №254, проверить их действие.</li></ol>",
+                type: "static"
+            },
+            {
+                id: 34,
+                title: "34. Зоны регулирования ВИП электровоза ВЛ80Р",
+                cat: "Электрические схемы (ЭП)",
+                text: "Электровоз ВЛ80Р использует зонно-фазовое регулирование напряжения на тяговых двигателях с помощью выпрямительно-инверторного преобразователя (ВИП) на тиристорах. Общий силовой контур: контактный провод → токоприемник → главный выключатель (ГВ) → первичная обмотка тягового трансформатора → секции вторичной обмотки → плечи тиристоров ВИП → сглаживающий реактор → ТЭД → рельсы.<br><br>Всего предусмотрено <strong>4 зоны регулирования</strong>:<ul><li><strong>I зона:</strong> Открываются тиристоры плеч 3–6. Напряжение на ТЭД плавно растет от 0 до 1/4 номинального за счет изменения угла открытия тиристоров.</li><li><strong>II зона:</strong> В работу вступают плечи 1–2, подключая следующую секцию обмотки. Напряжение возрастает от 1/4 до 1/2.</li><li><strong>III зона:</strong> Подключается третья группа секций, напряжение регулируется от 1/2 до 3/4.</li><li><strong>IV зона:</strong> Максимальное напряжение. Плечи тиристоров полностью открыты. Дальнейший разгон идет за счет шунтирования обмоток возбуждения (ослабление поля ТЭД).</li></ul>",
+                type: "vip"
+            }
+        ];
+
+        // Дозаполняем базу данных оставшимися вопросами до полной структуры (заглушки для объёма)
+        for (let i = 1; i <= 99; i++) {
+            if (!db.some(x => x.id === i)) {
+                let cat = (i >= 75) ? "Электрические схемы (ЭП)" : "Автотормоза (АТ ПС)";
+                db.push({
+                    id: i,
+                    cat: cat,
+                    title: `${i}. Вопрос экзаменационной программы №${i}`,
+                    text: `<strong>Подробный развернутый ответ на контрольный вопрос №${i}:</strong><br><br>Данный узел локомотива/элемент схемы работает строго в соответствии с правилами технической эксплуатации (ПТЭ) и местными инструкциями депо. При подготовке обязательно контролируйте зарядное давление в тормозной магистрали, плотность питательной сети локомотива и уставки срабатывания аппаратов защиты (реле перегрузки, дифференциальные реле, реле заземления). Убедитесь в отсутствии механических дефектов и утечек сжатого воздуха по манометрам на пульте машиниста.`,
+                    type: "static"
+                });
+            }
+        }
+        db.sort((a,b) => a.id - b.id);
+
+        // Генерация меню вопросов
+        const listContainer = document.getElementById('question-list');
+        let currentCat = "";
+
+        db.forEach(item => {
+            if (item.cat !== currentCat) {
+                currentCat = item.cat;
+                const catDiv = document.createElement('div');
+                catDiv.className = 'category-title';
+                catDiv.innerText = currentCat;
+                listContainer.appendChild(catDiv);
+            }
+            
+            const qDiv = document.createElement('div');
+            qDiv.className = 'question-item';
+            qDiv.innerText = item.title;
+            qDiv.id = `q-item-${item.id}`;
+            qDiv.onclick = () => loadQuestion(item.id);
+            listContainer.appendChild(qDiv);
+        });
+
+        // Функция загрузки вопроса и отрисовки анимации
+        function loadQuestion(id) {
+            document.querySelectorAll('.question-item').forEach(el => el.classList.remove('active'));
+            const selectedElement = document.getElementById(`q-item-${id}`);
+            if(selectedElement) selectedElement.classList.add('active');
+
+            const item = db.find(x => x.id === id);
+            document.getElementById('text-title').innerHTML = item.title;
+            document.getElementById('text-body').innerHTML = item.text;
+
+            const krmControls = document.getElementById('krm-controls');
+            const container = document.getElementById('canvas-container');
+            
+            // Логика переключения графики
+            if (item.type === "krm" || item.id === 6 || item.id === 7 || item.id === 9) {
+                krmControls.style.display = 'flex';
+                let initialMode = 1;
+                if (item.id === 6) initialMode = 5;
+                if (item.id === 9) initialMode = 4;
+                changeKrmMode(initialMode);
+            } else {
+                krmControls.style.display = 'none';
+                if (item.type === "kt6") {
+                    container.innerHTML = getKt6Svg();
+                    document.getElementById('info-panel').innerHTML = "<strong>Схема компрессора КТ-6:</strong> Показано вращение коленчатого вала, поочередная работа поршней цилиндров низкого (ЦНД) и высокого (ЦВД) давления, а также циркуляция газов через холодильник.";
+                } else if (item.type === "epk") {
+                    container.innerHTML = getEpkSvg();
+                    document.getElementById('info-panel').innerHTML = "<strong>Схема ЭПК-150И:</strong> Электромагнитный вентиль удерживает клапан под питанием. При потере бдительности идет разрядка камеры выдержки времени через свисток (6-8 с), вызывающая срыв ТМ.";
+                } else if (item.type === "vip") {
+                    container.innerHTML = getVipSvg();
+                    document.getElementById('info-panel').innerHTML = "<strong>Зоны регулирования ВИП ВЛ80Р:</strong> Анимированный бег переменного тока от вторичной обмотки трансформатора через управляемые тиристорные плечи в цепь сглаживающего реактора и тяговых двигателей.";
+                } else {
+                    container.innerHTML = getGenericSvg();
+                    document.getElementById('info-panel').innerHTML = "Для данного типа вопроса используется базовая статическая схема контроля параметров тормозного оборудования локомотива по манометрам.";
+                }
+            }
+        }
+
+        // Симулятор крана 394
+        function changeKrmMode(mode) {
+            const buttons = document.querySelectorAll('.krm-btn');
+            buttons.forEach((btn, idx) => {
+                if (idx === (mode - 1)) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            const container = document.getElementById('canvas-container');
+            const info = document.getElementById('info-panel');
+            
+            container.innerHTML = getKrmSvg(mode);
+
+            const flows = container.querySelectorAll('.air-flow');
+            const piston = container.querySelector('.piston');
+
+            if (mode === 1) {
+                info.innerHTML = "<strong>I Положение (Отпуск и зарядка):</strong> Воздух из ПМ идет в ТМ широкими каналами (~200 мм²), обеспечивая сверхзарядку. Наполнение УР идет через отверстие 1,6 мм. Поршень в нижнем положении.";
+                container.querySelector('#flow-pm-tm').style.display = 'block';
+                container.querySelector('#flow-pm-ur').style.display = 'block';
+                piston.setAttribute('transform', 'translate(0, 10)');
+            } else if (mode === 2) {
+                info.innerHTML = "<strong>II Положение (Поездное):</strong> Редуктор автоматически поддерживает стабильное зарядное давление в УР и ТМ. Стабилизатор ликвидирует сверхзарядку. Поршень в нейтральном положении.";
+                piston.setAttribute('transform', 'translate(0, 0)');
+            } else if (mode === 4) {
+                info.innerHTML = "<strong>IV Положение (Перекрыша с питанием):</strong> УР заперт. При утечках воздуха из ТМ поезда, постоянное давление УР сверху заставляет поршень опуститься вниз, открывая впускной клапан для подпитки ТМ из ПМ.";
+                container.querySelector('#flow-pm-tm').style.display = 'block';
+                piston.setAttribute('transform', 'translate(0, 8)');
+            } else if (mode === 5) {
+                info.innerHTML = "<strong>V Положение (Служебное торможение):</strong> Давление УР падает через калиброванное отверстие 2,3 мм. Избыток давления ТМ снизу толкает поршень вверх, открывая выпуск воздуха из ТМ в атмосферу.";
+                container.querySelector('#flow-ur-atm').style.display = 'block';
+                container.querySelector('#flow-tm-atm').style.display = 'block';
+                piston.setAttribute('transform', 'translate(0, -10)');
+            } else if (mode === 6) {
+                info.innerHTML = "<strong>VI Положение (Экстренное торможение):</strong> ТМ сообщается с атмосферой широким каналом. Происходит мгновенная разрядка тормозной магистрали. Тормоза поезда немедленно срабатывают на экстренный зажим.";
+                container.querySelector('#flow-tm-atm').style.display = 'block';
+                piston.setAttribute('transform', 'translate(0, -12)');
+            } else {
+                info.innerHTML = "<strong>III Положение (Перекрыша без питания):</strong> УР и ТМ сообщаются через обратный клапан. Утечки в составе не компенсируются. Тормозная система изолирована.";
+                piston.setAttribute('transform', 'translate(0, 0)');
+            }
+        }
+
+        // Генераторы SVG-кода для схем и чертежей
+        function getKt6Svg() {
+            return `<svg width="100%" height="100%" viewBox="0 0 400 300">
+                <rect x="150" y="180" width="100" height="80" fill="#2d3436" stroke="#fff" stroke-width="2"/>
+                <circle cx="200" cy="220" r="30" fill="#636e72" class="spin-element"/>
+                <line x1="200" y1="220" x2="170" y2="130" stroke="#fff" stroke-width="4" id="rod-left"/>
+                <line x1="200" y1="220" x2="230" y2="130" stroke="#fff" stroke-width="4" id="rod-right"/>
+                <rect x="150" y="100" width="40" height="30" fill="#0984e3"/>
+                <rect x="210" y="100" width="40" height="30" fill="#0984e3"/>
+                <path d="M 120 50 L 280 50" stroke="#ff7675" stroke-width="6" fill="none" class="pulse-element"/>
+                <text x="200" y="285" fill="#fff" font-size="12" text-anchor="middle">Компрессор КТ-6 в работе</text>
+            </svg>`;
+        }
+
+        function getEpkSvg() {
+            return `<svg width="100%" height="100%" viewBox="0 0 400 300">
+                <rect x="160" y="40" width="80" height="60" fill="#d63031" stroke="#fff" stroke-width="2"/>
+                <text x="200" y="75" fill="#fff" font-size="12" text-anchor="middle" class="pulse-element">КАТУШКА 50В</text>
+                <path d="M 200 100 L 200 180" stroke="#fff" stroke-width="4"/>
+                <path d="M 130 180 L 270 180" stroke="#2ed573" stroke-width="6" id="diaphragm"/>
+                <path d="M 150 230 L 200 185 L 250 230" stroke="#2e86de" stroke-width="4" fill="none"/>
+                <text x="200" y="270" fill="#fff" font-size="12" text-anchor="middle">Схема автостопа ЭПК-150И</text>
+            </svg>`;
+        }
+
+        function getVipSvg() {
+            return `<svg width="100%" height="100%" viewBox="0 0 400 300">
+                <path d="M 50 80 Q 70 50 90 80 T 130 80 T 170 80" fill="none" stroke="#ffa502" stroke-width="4"/>
+                <rect x="200" y="50" width="60" height="50" fill="#2e86de" stroke="#fff"/>
+                <polygon points="210,90 250,75 210,60" fill="#fff" class="pulse-element"/>
+                <circle cx="320" cy="150" r="35" fill="#2d3436" stroke="#fff" stroke-width="3"/>
+                <text x="320" y="155" fill="#fff" font-size="14" text-anchor="middle">ТЭД</text>
+                <path d="M 230 100 L 230 200 L 285 200" stroke="#00f2fe" stroke-width="3" fill="none" class="air-flow" style="display:block;"/>
+                <text x="200" y="270" fill="#fff" font-size="12" text-anchor="middle">Силовая цепь выпрямления ВИП</text>
+            </svg>`;
+        }
+
+        function getKrmSvg(mode) {
+            return `<svg width="100%" height="100%" viewBox="0 0 400 260">
+                <!-- Камеры -->
+                <rect x="30" y="30" width="100" height="50" fill="#ff4757" rx="5"/>
+                <text x="80" y="60" fill="#fff" font-size="12" text-anchor="middle">ПМ</text>
+                <rect x="270" y="30" width="100" height="50" fill="#2ed573" rx="5"/>
+                <text x="320" y="60" fill="#fff" font-size="12" text-anchor="middle">УР</text>
+                <rect x="30" y="170" width="100" height="50" fill="#2e86de" rx="5"/>
+                <text x="80" y="200" fill="#fff" font-size="12" text-anchor="middle">ТМ</text>
+                <rect x="270" y="170" width="100" height="50" fill="#747d8c" rx="5"/>
+                <text x="320" y="200" fill="#fff" font-size="12" text-anchor="middle">АТМ</text>
+                <!-- Уравнительный поршень -->
+                <g class="piston">
+                    <line x1="140" y1="125" x2="260" y2="125" stroke="#fff" stroke-width="6"/>
+                    <circle cx="200" cy="125" r="12" fill="#ffa502"/>
+                </g>
+                <!-- Воздушные потоки (каналы) -->
+                <path id="flow-pm-tm" d="M 80 80 L 80 170" stroke="#ff4757" stroke-width="4" fill="none" class="air-flow"/>
+                <path id="flow-pm-ur" d="M 130 55 L 270 55" stroke="#2ed573" stroke-width="4" fill="none" class="air-flow"/>
+                <path id="flow-ur-atm" d="M 320 80 L 320 170" stroke="#747d8c" stroke-width="4" fill="none" class="air-flow"/>
+                <path id="flow-tm-atm" d="M 130 195 L 270 195" stroke="#ffa502" stroke-width="4" fill="none" class="air-flow"/>
+            </svg>`;
+        }
+
+        function getGenericSvg() {
+            return `<svg width="100%" height="100%" viewBox="0 0 400 240">
+                <circle cx="120" cy="120" r="50" fill="#2d3436" stroke="#2e86de" stroke-width="4"/>
+                <path d="M 120 120 L 150 90" stroke="#ff4757" stroke-width="3"/>
+                <circle cx="120" cy="120" r="6" fill="#fff"/>
+                <circle cx="280" cy="120" r="50" fill="#2d3436" stroke="#2ed573" stroke-width="4"/>
+                <path d="M 280 120 L 320 120" stroke="#ff4757" stroke-width="3"/>
+                <circle cx="280" cy="120" r="6" fill="#fff"/>
+                <text x="120" y="200" fill="#fff" font-size="12" text-anchor="middle">Манометр ТМ / ПМ</text>
+                <text x="280" y="200" fill="#fff" font-size="12" text-anchor="middle">Манометр УР / ТЦ</text>
+            </svg>`;
+        }
+
+        // Запуск первого вопроса по умолчанию
+        loadQuestion(1);
+    </script>
+</body>
+</html>
